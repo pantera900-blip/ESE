@@ -1,581 +1,251 @@
-import zipfile
-import os
-
-# 1. CONTENT FOR THE WEBSITE (HTML)
-html_content = r"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emmanuel Samson Egbert | 27 Years of Guitar Mastery</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet">
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        metal: '#111111',
-                        blood: '#b91c1c',
-                        gold: '#d97706',
-                        acoustic: '#fffbeb',
-                    },
-                    fontFamily: {
-                        header: ['Cinzel', 'serif'],
-                        body: ['Montserrat', 'sans-serif'],
-                    },
-                    animation: {
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                    }
-                }
-            }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Emmanuel Samson Egbert | 27 Years of Guitar Mastery</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Montserrat:wght@300;400;600;800&display=swap" rel="stylesheet"/>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            metal: '#111111',
+            blood: '#b91c1c',
+            gold: '#d97706',
+            acoustic: '#fffbeb',
+          },
+          fontFamily: {
+            header: ['Cinzel', 'serif'],
+            body: ['Montserrat', 'sans-serif'],
+          }
         }
-    </script>
-    <style>
-        .loader {
-            border: 3px solid #f3f3f3;
-            border-radius: 50%;
-            border-top: 3px solid #b91c1c;
-            width: 24px;
-            height: 24px;
-            -webkit-animation: spin 1s linear infinite; /* Safari */
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
+      }
+    }
+  </script>
 </head>
 <body class="bg-metal text-gray-200 font-body overflow-x-hidden">
 
-    <!-- Navbar -->
-    <nav class="fixed w-full z-50 bg-black/95 backdrop-blur-md border-b border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-20">
-                <div class="flex-shrink-0 flex flex-col">
-                    <span class="font-header font-bold text-xl tracking-wider text-white">ESE<span class="text-blood">.</span></span>
-                    <span class="text-[10px] text-gray-400 uppercase tracking-widest">Est. 1997</span>
-                </div>
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-center space-x-8">
-                        <a href="#home" class="hover:text-blood px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
-                        <a href="#about" class="hover:text-blood px-3 py-2 rounded-md text-sm font-medium transition-colors">The Artist</a>
-                        <a href="#ai-studio" class="hover:text-gold px-3 py-2 rounded-md text-sm font-medium transition-colors text-gold/80"><i class="fas fa-magic mr-1"></i> AI Studio</a>
-                        <!-- Call Button -->
-                        <a href="https://wa.me/918601695720" target="_blank" class="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-full border border-gray-600 transition-all">
-                            <i class="fab fa-whatsapp text-green-500 text-lg"></i>
-                            <span class="text-sm font-bold">+91 8601695720</span>
-                        </a>
-                        <a href="#contact" class="bg-blood hover:bg-red-800 text-white px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-colors transform hover:-translate-y-1 shadow-lg shadow-red-900/50">Book Now</a>
-                    </div>
-                </div>
-                <!-- Mobile menu button -->
-                <div class="-mr-2 flex md:hidden">
-                    <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
-                        <i class="fas fa-bars text-2xl"></i>
-                    </button>
-                </div>
-            </div>
-        </div>
-        <!-- Mobile Menu -->
-        <div class="hidden md:hidden bg-zinc-900 border-b border-gray-800" id="mobile-menu">
-            <div class="px-4 pt-4 pb-6 space-y-3">
-                <a href="#home" class="block px-3 py-2 rounded-md text-base font-medium hover:text-blood">Home</a>
-                <a href="#about" class="block px-3 py-2 rounded-md text-base font-medium hover:text-blood">The Artist</a>
-                <a href="#ai-studio" class="block px-3 py-2 rounded-md text-base font-medium hover:text-gold text-gold">AI Studio</a>
-                <a href="tel:+918601695720" class="block px-3 py-2 rounded-md text-base font-bold text-green-400"><i class="fas fa-phone-alt mr-2"></i> +91 8601695720</a>
-                <a href="#contact" class="block w-full text-center bg-blood py-3 rounded-sm text-white font-bold uppercase">Book Now</a>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Hero Section -->
-    <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
-        <!-- Dynamic Background using User Image -->
-        <div class="absolute inset-0 z-0">
-            <img src="https://lh5.googleusercontent.com/p/AF1QipN3-y_22IqGUEyG3qU_P-hL0gKz_Y8k4tG5jT6E=w2048-h2048-n-k-rw-no-v1" 
-                 alt="Emmanuel Samson Egbert Live" 
-                 class="w-full h-full object-cover object-center scale-105 animate-[pulse_10s_ease-in-out_infinite]">
-            <div class="absolute inset-0 bg-gradient-to-t from-metal via-black/80 to-black/40"></div>
+  <!-- Navbar -->
+  <nav class="fixed w-full z-50 bg-black/95 backdrop-blur-md border-b border-gray-800">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        <div class="flex-shrink-0 flex flex-col">
+          <span class="font-header font-bold text-xl tracking-wider text-white">ESE<span class="text-blood">.</span></span>
+          <span class="text-[10px] text-gray-400 uppercase tracking-widest">Est. 1997</span>
         </div>
 
-        <div class="relative z-10 text-center px-4 max-w-5xl mt-16">
-            <div class="inline-block border border-gold/50 bg-black/50 backdrop-blur-sm px-6 py-2 rounded-full mb-6">
-                <p class="text-gold uppercase tracking-[0.2em] text-xs md:text-sm font-bold">
-                    <i class="fas fa-star mr-2"></i> 27 Years of Experience
-                </p>
+        <div class="hidden md:block">
+          <div class="ml-10 flex items-center space-x-8">
+            <a href="#home" class="hover:text-blood px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
+            <a href="#about" class="hover:text-blood px-3 py-2 rounded-md text-sm font-medium transition-colors">The Artist</a>
+            <a href="#media" class="hover:text-blood px-3 py-2 rounded-md text-sm font-medium transition-colors">Media</a>
+
+            <!-- WhatsApp Call Button -->
+            <a href="https://wa.me/918601695720" target="_blank" class="flex items-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-white px-4 py-2 rounded-full border border-gray-600 transition-all">
+              <i class="fab fa-whatsapp text-green-500 text-lg"></i>
+              <span class="text-sm font-bold">+91 8601695720</span>
+            </a>
+
+            <a href="#contact" class="bg-blood hover:bg-red-800 text-white px-6 py-2 rounded-sm text-sm font-bold uppercase tracking-widest transition-colors transform hover:-translate-y-1 shadow-lg shadow-red-900/50">Book Now</a>
+          </div>
+        </div>
+
+        <!-- Mobile menu button -->
+        <div class="-mr-2 flex md:hidden">
+          <button type="button" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-gray-700 focus:outline-none">
+            <i class="fas fa-bars text-2xl"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu -->
+    <div class="hidden md:hidden bg-zinc-900 border-b border-gray-800" id="mobile-menu">
+      <div class="px-4 pt-4 pb-6 space-y-3">
+        <a href="#home" class="block px-3 py-2 rounded-md text-base font-medium hover:text-blood">Home</a>
+        <a href="#about" class="block px-3 py-2 rounded-md text-base font-medium hover:text-blood">The Artist</a>
+        <a href="tel:+918601695720" class="block px-3 py-2 rounded-md text-base font-bold text-green-400"><i class="fas fa-phone-alt mr-2"></i> +91 8601695720</a>
+        <a href="#contact" class="block w-full text-center bg-blood py-3 rounded-sm text-white font-bold uppercase">Book Now</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section id="home" class="relative h-screen flex items-center justify-center overflow-hidden">
+    <!-- Background -->
+    <div class="absolute inset-0 z-0">
+      <img src="https://lh5.googleusercontent.com/p/AF1QipN3-y_22IqGUEyG3qU_P-hL0gKz_Y8k4tG5jT6E=w2048-h2048-n-k-rw-no-v1"
+           alt="Emmanuel Samson Egbert Live"
+           class="w-full h-full object-cover object-center scale-105 animate-[pulse_10s_ease-in-out_infinite]">
+      <div class="absolute inset-0 bg-gradient-to-t from-metal via-black/80 to-black/40"></div>
+    </div>
+
+    <div class="relative z-10 text-center px-4 max-w-5xl mt-16">
+      <div class="inline-block border border-gold/50 bg-black/50 backdrop-blur-sm px-6 py-2 rounded-full mb-6">
+        <p class="text-gold uppercase tracking-[0.2em] text-xs md:text-sm font-bold">
+          <i class="fas fa-star mr-2"></i> 27 Years of Experience
+        </p>
+      </div>
+
+      <h1 class="font-header text-5xl md:text-8xl font-black mb-6 leading-none drop-shadow-2xl">
+        SHRED & <span class="text-transparent bg-clip-text bg-gradient-to-r from-blood to-red-600">SOUL</span>
+      </h1>
+
+      <p class="text-gray-200 text-lg md:text-2xl mb-10 font-light max-w-3xl mx-auto drop-shadow-lg leading-relaxed">
+        From the aggression of <span class="font-bold text-white">Metalcore</span> to the intimacy of <span class="font-bold text-gold">Acoustic Pop</span>.
+        Prayagraj's most versatile guitarist.
+      </p>
+
+      <div class="flex flex-col md:flex-row justify-center gap-4">
+        <a href="#contact" class="px-8 py-4 bg-blood hover:bg-red-800 text-white font-bold uppercase tracking-widest text-sm shadow-lg shadow-red-900/50 transition-all">
+          Book for Event
+        </a>
+        <a href="https://www.youtube.com/@emmanuelsamsonegbert" target="_blank" class="px-8 py-4 border border-white/30 bg-white/10 backdrop-blur-md hover:bg-white hover:text-black text-white font-bold uppercase tracking-widest text-sm transition-all">
+          Watch Showreel
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- The Identity Section -->
+  <section id="about" class="py-24 bg-metal relative">
+    <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-16">
+        <h2 class="font-header text-3xl md:text-5xl font-bold mb-4 text-white">The <span class="text-gray-600">Dual</span> Identity</h2>
+        <p class="text-gray-400 max-w-2xl mx-auto">With over two decades of performance history, I don't just play songs; I adapt the atmosphere.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-8 md:gap-12">
+        <!-- Metal Profile -->
+        <div class="group relative bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-blood transition-all duration-500">
+          <div class="h-64 overflow-hidden relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent z-10"></div>
+            <img src="https://lh5.googleusercontent.com/p/AF1QipN_XgZ_vC3Kj1y_o8h9w9p4Xk2_Z7g6Pq5_R8=w2048-h2048-n-k-rw-no-v1"
+                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" alt="Metal Performance">
+            <div class="absolute bottom-4 left-4 z-20">
+              <i class="fas fa-bolt text-3xl text-blood drop-shadow-lg"></i>
             </div>
-            
-            <h1 class="font-header text-5xl md:text-8xl font-black mb-6 leading-none drop-shadow-2xl">
-                SHRED & <span class="text-transparent bg-clip-text bg-gradient-to-r from-blood to-red-600">SOUL</span>
-            </h1>
-            
-            <p class="text-gray-200 text-lg md:text-2xl mb-10 font-light max-w-3xl mx-auto drop-shadow-lg leading-relaxed">
-                From the aggression of <span class="font-bold text-white">Metalcore</span> to the intimacy of <span class="font-bold text-gold">Acoustic Pop</span>. 
-                Prayagraj's most versatile guitarist.
+          </div>
+
+          <div class="p-8">
+            <h3 class="font-header text-3xl font-bold text-white mb-2">The Shredder</h3>
+            <p class="text-blood text-sm font-bold uppercase tracking-widest mb-6">Slipknot • Pantera • Lamb of God</p>
+            <p class="text-gray-400 leading-relaxed mb-6 border-l-2 border-zinc-700 pl-4">
+              High-gain precision built on 27 years of discipline. Bringing festival-ready energy with heavy riffs and technical solos that demand attention.
             </p>
-            
-            <div class="flex flex-col md:flex-row justify-center gap-4">
-                <a href="#contact" class="px-8 py-4 bg-blood hover:bg-red-800 text-white font-bold uppercase tracking-widest text-sm shadow-lg shadow-red-900/50 transition-all">
-                    Book for Event
-                </a>
-                <a href="https://www.youtube.com/@emmanuelsamsonegbert" target="_blank" class="px-8 py-4 border border-white/30 bg-white/10 backdrop-blur-md hover:bg-white hover:text-black text-white font-bold uppercase tracking-widest text-sm transition-all">
-                    Watch Showreel
-                </a>
-            </div>
+          </div>
         </div>
-    </section>
 
-    <!-- The Identity Section (Updated with Images) -->
-    <section id="about" class="py-24 bg-metal relative">
-        <!-- Background decorative elements -->
-        <div class="absolute top-0 left-0 w-full h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent"></div>
-        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16">
-                <h2 class="font-header text-3xl md:text-5xl font-bold mb-4 text-white">The <span class="text-gray-600">Dual</span> Identity</h2>
-                <p class="text-gray-400 max-w-2xl mx-auto">With over two decades of performance history, I don't just play songs; I adapt the atmosphere.</p>
+        <!-- Acoustic Profile -->
+        <div class="group relative bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-gold transition-all duration-500">
+          <div class="h-64 overflow-hidden relative">
+            <div class="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent z-10"></div>
+            <img src="https://lh5.googleusercontent.com/p/AF1QipP_XgZ_vC3Kj1y_o8h9w9p4Xk2_Z7g6Pq5_R8=w2048-h2048-n-k-rw-no-v1"
+                 class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" alt="Acoustic Performance">
+            <div class="absolute bottom-4 left-4 z-20">
+              <i class="fas fa-guitar text-3xl text-gold drop-shadow-lg"></i>
             </div>
+          </div>
 
-            <div class="grid md:grid-cols-2 gap-8 md:gap-12">
-                <!-- Metal Profile -->
-                <div class="group relative bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-blood transition-all duration-500">
-                    <!-- Image Container -->
-                    <div class="h-64 overflow-hidden relative">
-                        <div class="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent z-10"></div>
-                        <img src="https://lh5.googleusercontent.com/p/AF1QipN_XgZ_vC3Kj1y_o8h9w9p4Xk2_Z7g6Pq5_R8=w2048-h2048-n-k-rw-no-v1" 
-                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" alt="Metal Performance">
-                        <div class="absolute bottom-4 left-4 z-20">
-                            <i class="fas fa-bolt text-3xl text-blood drop-shadow-lg"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="p-8">
-                        <h3 class="font-header text-3xl font-bold text-white mb-2">The Shredder</h3>
-                        <p class="text-blood text-sm font-bold uppercase tracking-widest mb-6">Slipknot • Pantera • Lamb of God</p>
-                        <p class="text-gray-400 leading-relaxed mb-6 border-l-2 border-zinc-700 pl-4">
-                            High-gain precision built on 27 years of discipline. Bringing festival-ready energy with heavy riffs and technical solos that demand attention.
-                        </p>
-                    </div>
-                </div>
-
-                <!-- Acoustic Profile -->
-                <div class="group relative bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 hover:border-gold transition-all duration-500">
-                    <!-- Image Container -->
-                    <div class="h-64 overflow-hidden relative">
-                        <div class="absolute inset-0 bg-gradient-to-t from-zinc-900 to-transparent z-10"></div>
-                        <img src="https://lh5.googleusercontent.com/p/AF1QipP_XgZ_vC3Kj1y_o8h9w9p4Xk2_Z7g6Pq5_R8=w2048-h2048-n-k-rw-no-v1" 
-                             class="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700 grayscale group-hover:grayscale-0" alt="Acoustic Performance">
-                        <div class="absolute bottom-4 left-4 z-20">
-                            <i class="fas fa-guitar text-3xl text-gold drop-shadow-lg"></i>
-                        </div>
-                    </div>
-                    
-                    <div class="p-8">
-                        <h3 class="font-header text-3xl font-bold text-white mb-2">The Storyteller</h3>
-                        <p class="text-gold text-sm font-bold uppercase tracking-widest mb-6">John Mayer • Pop Ballads • Country</p>
-                        <p class="text-gray-400 leading-relaxed mb-6 border-l-2 border-zinc-700 pl-4">
-                            Soulful, melodic, and intricate. Perfect for upscale cafes and private gatherings where the music needs to speak to the heart, not just the ears.
-                        </p>
-                    </div>
-                </div>
-            </div>
+          <div class="p-8">
+            <h3 class="font-header text-3xl font-bold text-white mb-2">The Storyteller</h3>
+            <p class="text-gold text-sm font-bold uppercase tracking-widest mb-6">John Mayer • Pop Ballads • Country</p>
+            <p class="text-gray-400 leading-relaxed mb-6 border-l-2 border-zinc-700 pl-4">
+              Soulful, melodic, and intricate. Perfect for upscale cafes and private gatherings where the music needs to speak to the heart, not just the ears.
+            </p>
+          </div>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <!-- Experience Counter -->
-    <section class="bg-blood py-12">
-        <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-            <div>
-                <span class="block text-4xl md:text-6xl font-black text-white">27+</span>
-                <span class="text-red-200 text-sm uppercase tracking-widest">Years Experience</span>
-            </div>
-            <div>
-                <span class="block text-4xl md:text-6xl font-black text-white">100+</span>
-                <span class="text-red-200 text-sm uppercase tracking-widest">Stages Played</span>
-            </div>
-            <div>
-                <span class="block text-4xl md:text-6xl font-black text-white">1k+</span>
-                <span class="text-red-200 text-sm uppercase tracking-widest">Songs Mastered</span>
-            </div>
-            <div>
-                <span class="block text-4xl md:text-6xl font-black text-white">∞</span>
-                <span class="text-red-200 text-sm uppercase tracking-widest">Passion</span>
-            </div>
+  <!-- Experience Counter -->
+  <section class="bg-blood py-12">
+    <div class="max-w-7xl mx-auto px-4 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+      <div>
+        <span class="block text-4xl md:text-6xl font-black text-white">27+</span>
+        <span class="text-red-200 text-sm uppercase tracking-widest">Years Experience</span>
+      </div>
+      <div>
+        <span class="block text-4xl md:text-6xl font-black text-white">100+</span>
+        <span class="text-red-200 text-sm uppercase tracking-widest">Stages Played</span>
+      </div>
+      <div>
+        <span class="block text-4xl md:text-6xl font-black text-white">1k+</span>
+        <span class="text-red-200 text-sm uppercase tracking-widest">Songs Mastered</span>
+      </div>
+      <div>
+        <span class="block text-4xl md:text-6xl font-black text-white">∞</span>
+        <span class="text-red-200 text-sm uppercase tracking-widest">Passion</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact Section -->
+  <section id="contact" class="py-20 bg-black relative overflow-hidden">
+    <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#333 1px, transparent 1px); background-size: 30px 30px;"></div>
+
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div class="bg-zinc-900/80 backdrop-blur border border-gray-800 p-8 md:p-12 rounded-lg shadow-2xl">
+        <div class="text-center mb-10">
+          <h2 class="font-header text-4xl font-bold text-white mb-4">Get In Touch</h2>
+          <p class="text-gray-400">Available for Weddings, Corporate Events, Festivals & Sessions</p>
+
+          <!-- Prominent Phone Number -->
+          <div class="mt-8">
+            <a href="tel:+918601695720" class="inline-flex items-center gap-3 text-2xl md:text-4xl font-bold text-white hover:text-blood transition-colors">
+              <i class="fas fa-mobile-alt"></i>
+              +91 8601695720
+            </a>
+            <p class="text-sm text-green-500 mt-2 font-medium tracking-wide"><i class="fab fa-whatsapp mr-1"></i> Available on WhatsApp</p>
+          </div>
         </div>
-    </section>
 
-    <!-- NEW SECTION: Gemini AI Studio -->
-    <section id="ai-studio" class="py-20 bg-black relative border-y border-zinc-800">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <span class="text-gold uppercase tracking-[0.2em] text-xs font-bold bg-zinc-900 border border-gold/30 px-3 py-1 rounded-full">Powered by Gemini AI</span>
-                <h2 class="font-header text-3xl md:text-5xl font-bold mt-4 text-white">The Creative <span class="text-transparent bg-clip-text bg-gradient-to-r from-blood to-gold">Studio</span></h2>
-                <p class="text-gray-400 mt-4">Interact with Emmanuel's digital brain. Generate setlists or get creative inspiration.</p>
+        <div class="grid md:grid-cols-2 gap-8 mt-12">
+          <div class="text-center md:text-left">
+            <h3 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-gray-700 pb-2">Location</h3>
+            <p class="text-gray-400">Prayagraj, Uttar Pradesh, India</p>
+            <p class="text-gray-500 text-sm mt-2">Open to travel for major events.</p>
+          </div>
+          <div class="text-center md:text-right">
+            <h3 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-gray-700 pb-2">Socials</h3>
+            <div class="flex justify-center md:justify-end space-x-6">
+              <a href="https://www.youtube.com/@emmanuelsamsonegbert" target="_blank" class="text-gray-400 hover:text-red-600 text-2xl transition-transform hover:scale-110"><i class="fab fa-youtube"></i></a>
+              <a href="https://www.instagram.com/emmanuelsamsonegbert" target="_blank" class="text-gray-400 hover:text-pink-600 text-2xl transition-transform hover:scale-110"><i class="fab fa-instagram"></i></a>
+              <a href="#" class="text-gray-400 hover:text-blue-500 text-2xl transition-transform hover:scale-110"><i class="fab fa-facebook"></i></a>
             </div>
-
-            <div class="grid lg:grid-cols-2 gap-12">
-                
-                <!-- Tool 1: Setlist Generator (Booking Focus) -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-lg hover:border-blood transition-all group">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="bg-blood/20 p-3 rounded-full text-blood group-hover:bg-blood group-hover:text-white transition-colors">
-                            <i class="fas fa-list-ul text-2xl"></i>
-                        </div>
-                        <h3 class="font-header text-2xl font-bold text-white">Setlist Architect</h3>
-                    </div>
-                    <p class="text-gray-400 text-sm mb-6">Planning an event? See what a custom setlist by Emmanuel would look like.</p>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs uppercase text-gray-500 font-bold tracking-wider">Event Type</label>
-                            <select id="eventType" class="w-full bg-black border border-zinc-700 text-white p-3 mt-1 rounded focus:border-blood outline-none">
-                                <option value="Wedding Reception (Classy/Acoustic)">Wedding Reception (Classy/Acoustic)</option>
-                                <option value="College Rock Fest (High Energy)">College Rock Fest (High Energy)</option>
-                                <option value="Cafe Ambience (Instrumental/Soft)">Cafe Ambience (Instrumental/Soft)</option>
-                                <option value="Metal Gig (Heavy/Mosh pit)">Metal Gig (Heavy/Mosh pit)</option>
-                            </select>
-                        </div>
-                        <button onclick="generateSetlist()" class="w-full bg-zinc-800 hover:bg-blood text-white font-bold py-3 rounded border border-zinc-700 transition-all flex justify-center items-center gap-2">
-                            <span>✨ Generate Setlist</span>
-                            <div id="setlist-loader" class="loader hidden"></div>
-                        </button>
-                    </div>
-
-                    <!-- Output Area -->
-                    <div id="setlist-output" class="mt-6 hidden bg-black p-4 rounded border-l-2 border-blood text-sm text-gray-300 font-mono whitespace-pre-line leading-relaxed"></div>
-                </div>
-
-                <!-- Tool 2: Lyric/Riff Spark (Creative Focus) -->
-                <div class="bg-zinc-900/50 border border-zinc-800 p-8 rounded-lg hover:border-gold transition-all group">
-                    <div class="flex items-center gap-4 mb-6">
-                        <div class="bg-gold/20 p-3 rounded-full text-gold group-hover:bg-gold group-hover:text-black transition-colors">
-                            <i class="fas fa-lightbulb text-2xl"></i>
-                        </div>
-                        <h3 class="font-header text-2xl font-bold text-white">Lyrical Spark</h3>
-                    </div>
-                    <p class="text-gray-400 text-sm mb-6">Stuck? Enter a mood and get a unique lyric + guitar technique suggestion.</p>
-                    
-                    <div class="space-y-4">
-                        <div>
-                            <label class="text-xs uppercase text-gray-500 font-bold tracking-wider">Current Mood</label>
-                            <input type="text" id="lyricMood" placeholder="e.g., Nostalgic rainy day, or Pure rage" class="w-full bg-black border border-zinc-700 text-white p-3 mt-1 rounded focus:border-gold outline-none">
-                        </div>
-                        <button onclick="generateLyrics()" class="w-full bg-zinc-800 hover:bg-gold hover:text-black text-white font-bold py-3 rounded border border-zinc-700 transition-all flex justify-center items-center gap-2">
-                            <span>✨ Ignite Creativity</span>
-                            <div id="lyric-loader" class="loader hidden" style="border-top-color: #d97706;"></div>
-                        </button>
-                    </div>
-
-                    <!-- Output Area -->
-                    <div id="lyric-output" class="mt-6 hidden bg-black p-4 rounded border-l-2 border-gold text-sm text-gray-300 italic font-serif whitespace-pre-line leading-relaxed"></div>
-                </div>
-
-            </div>
+          </div>
         </div>
-    </section>
 
-    <!-- Contact Section -->
-    <section id="contact" class="py-20 bg-black relative overflow-hidden">
-        <!-- Background pattern -->
-        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#333 1px, transparent 1px); background-size: 30px 30px;"></div>
-
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="bg-zinc-900/80 backdrop-blur border border-gray-800 p-8 md:p-12 rounded-lg shadow-2xl">
-                <div class="text-center mb-10">
-                    <h2 class="font-header text-4xl font-bold text-white mb-4">Get In Touch</h2>
-                    <p class="text-gray-400">Available for Weddings, Corporate Events, Festivals & Sessions</p>
-                    
-                    <!-- Prominent Phone Number -->
-                    <div class="mt-8">
-                        <a href="tel:+918601695720" class="inline-flex items-center gap-3 text-2xl md:text-4xl font-bold text-white hover:text-blood transition-colors">
-                            <i class="fas fa-mobile-alt"></i>
-                            +91 8601695720
-                        </a>
-                        <p class="text-sm text-green-500 mt-2 font-medium tracking-wide"><i class="fab fa-whatsapp mr-1"></i> Available on WhatsApp</p>
-                    </div>
-                </div>
-
-                <div class="grid md:grid-cols-2 gap-8 mt-12">
-                    <div class="text-center md:text-left">
-                        <h3 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-gray-700 pb-2">Location</h3>
-                        <p class="text-gray-400">Prayagraj, Uttar Pradesh, India</p>
-                        <p class="text-gray-500 text-sm mt-2">Open to travel for major events.</p>
-                    </div>
-                    <div class="text-center md:text-right">
-                        <h3 class="text-white font-bold uppercase tracking-widest mb-4 border-b border-gray-700 pb-2">Socials</h3>
-                        <div class="flex justify-center md:justify-end space-x-6">
-                            <a href="https://www.youtube.com/@emmanuelsamsonegbert" target="_blank" class="text-gray-400 hover:text-red-600 text-2xl transition-transform hover:scale-110"><i class="fab fa-youtube"></i></a>
-                            <a href="#" class="text-gray-400 hover:text-pink-600 text-2xl transition-transform hover:scale-110"><i class="fab fa-instagram"></i></a>
-                            <a href="#" class="text-gray-400 hover:text-blue-500 text-2xl transition-transform hover:scale-110"><i class="fab fa-facebook"></i></a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Simple Action Button -->
-                <div class="mt-12">
-                    <a href="https://wa.me/918601695720?text=Hi%20Emmanuel,%20I%20am%20interested%20in%20booking%20you%20for%20an%20event." 
-                       class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded text-center uppercase tracking-widest transition-colors shadow-lg shadow-green-900/20">
-                        <i class="fab fa-whatsapp mr-2"></i> Chat on WhatsApp
-                    </a>
-                </div>
-            </div>
+        <!-- WhatsApp CTA -->
+        <div class="mt-12">
+          <a href="https://wa.me/918601695720?text=Hi%20Emmanuel,%20I%20am%20interested%20in%20booking%20you%20for%20an%20event."
+             class="block w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 rounded text-center uppercase tracking-widest transition-colors shadow-lg shadow-green-900/20">
+            <i class="fab fa-whatsapp mr-2"></i> Chat on WhatsApp
+          </a>
         </div>
-    </section>
+      </div>
+    </div>
+  </section>
 
-    <footer class="bg-black py-8 border-t border-gray-900 text-center text-gray-600 text-sm">
-        <p>&copy; 2025 Emmanuel Samson Egbert. All Rights Reserved.</p>
-        <p class="mt-2 text-gray-500">27 Years of Music • Prayagraj</p>
-    </footer>
-
-    <!-- Gemini API Integration Script -->
-    <script>
-        const apiKey = ""; // Runtime provided key
-
-        async function callGemini(prompt) {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }]
-            };
-
-            try {
-                const response = await fetch(url, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                
-                if (!response.ok) throw new Error('API Error');
-                
-                const data = await response.json();
-                return data.candidates[0].content.parts[0].text;
-            } catch (error) {
-                console.error("Gemini Error:", error);
-                return "The connection to the creative muse was interrupted. Please try again.";
-            }
-        }
-
-        async function generateSetlist() {
-            const eventType = document.getElementById('eventType').value;
-            const loader = document.getElementById('setlist-loader');
-            const output = document.getElementById('setlist-output');
-            
-            loader.classList.remove('hidden');
-            output.classList.add('hidden');
-            output.innerHTML = "";
-
-            // Custom prompt tailored to Emmanuel's specific repertoire
-            const prompt = `You are the digital assistant for Emmanuel Samson Egbert, a guitarist from Prayagraj with 27 years of experience. He specializes in two styles: 
-            1. Metal (Slipknot, Pantera, Lamb of God).
-            2. Acoustic/Pop (John Mayer, Bryan Adams, Country).
-            
-            The user wants a setlist for a "${eventType}".
-            Create a 6-song setlist appropriate for this event. 
-            - If it's a Wedding/Cafe, focus on the Acoustic/John Mayer style.
-            - If it's a Metal gig/College Fest, focus on the Heavy/Slipknot style.
-            - Include a brief 1-sentence "Vibe Check" for why these songs work.
-            - Format the output clearly with simple bullets. Keep it short.`;
-
-            const text = await callGemini(prompt);
-            
-            loader.classList.add('hidden');
-            output.classList.remove('hidden');
-            output.innerText = text;
-        }
-
-        async function generateLyrics() {
-            const mood = document.getElementById('lyricMood').value;
-            if(!mood) return;
-
-            const loader = document.getElementById('lyric-loader');
-            const output = document.getElementById('lyric-output');
-            
-            loader.classList.remove('hidden');
-            output.classList.add('hidden');
-            output.innerHTML = "";
-
-            const prompt = `Write a short, creative 4-line lyric verse based on the mood: "${mood}".
-            After the lyrics, suggest a specific Guitar Tuning (e.g., Drop D, Standard, Open E) and a Guitar Technique (e.g., Palm muting, Fingerpicking, Hybrid picking) that fits this mood.
-            Keep the tone artistic and musical.`;
-
-            const text = await callGemini(prompt);
-            
-            loader.classList.add('hidden');
-            output.classList.remove('hidden');
-            output.innerText = text;
-        }
-    </script>
+  <footer class="bg-black py-8 border-t border-gray-900 text-center text-gray-600 text-sm">
+    <p>&copy; 2025 Emmanuel Samson Egbert. All Rights Reserved.</p>
+    <p class="mt-2 text-gray-500">27 Years of Music • Prayagraj</p>
+  </footer>
 
 </body>
-</html>"""
-
-# 2. CONTENT FOR THE PRESS KIT (Markdown)
-epk_content = r"""# Emmanuel Samson Egbert
-**Guitarist | Session Artist | Performer**
-*Prayagraj, Uttar Pradesh, India*
-
-**YouTube:** [youtube.com/@emmanuelsamsonegbert](https://youtube.com/@emmanuelsamsonegbert)
-**Contact:** [Your Email Address]
-
----
-
-## 1. Artist Biography
-
-### The Elevator Pitch (Short Bio)
-Emmanuel Samson Egbert is a genre-bending guitarist from Prayagraj who bridges the gap between aggressive Metalcore and soulful Acoustic Pop. Known for his technical precision in covering giants like Slipknot and Pantera, he seamlessly transitions to the melodic storytelling of John Mayer, making him a versatile asset for any stage or studio.
-
-### The Full Story (Long Bio)
-Hailing from the historic city of Prayagraj, Emmanuel Samson Egbert has carved a unique niche in the Uttar Pradesh independent music scene. While many guitarists confine themselves to a single box, Emmanuel embraces the spectrum of sound.
-
-On one hand, he is a metal purist—channeling the down-tuned aggression of Nu-Metal and the technical shredding of modern Metalcore. His covers of **Slipknot**, **Lamb of God**, and **Killswitch Engage** demonstrate high-level proficiency in rhythm precision and lead speed.
-
-On the other hand, Emmanuel possesses a "Gold" side—an acoustic persona deeply influenced by **John Mayer**, **Bryan Adams**, and Country-Pop crossovers. This duality allows him to headline a rock festival one night and provide an intimate, sophisticated atmosphere for a private event the next.
-
-Currently focused on expanding his digital footprint and live performance schedule, Emmanuel is bringing a fresh, modern guitar sound to the Prayagraj circuit.
-
----
-
-## 2. Booking Information
-
-### Performance Formats
-* **Solo Acoustic:** Perfect for cafes, private dinners, and corporate mixers. (Vocals + Guitar or Instrumental Loop).
-* **Session Guitarist:** Available for studio recording (Lead/Rhythm) for Rock, Metal, and Pop tracks.
-* **Band/Fill-In:** Ready to step in as Lead Guitarist for Rock/Metal outfits.
-
-### Tech Rider (For Live Venues)
-* **Minimum Requirements:**
-    * 1x DI Box (For Acoustic set)
-    * 1x Shure SM57 or equivalent (For Cab micing if using Amp)
-    * 2x Power drops near stage front (For Pedalboard)
-    * 1x Monitor Wedge
-* **Preferred Backline (If provided):**
-    * Marshall JCM or Fender Twin Reverb Amps
-
----
-
-## 3. Sample Outreach Emails
-
-**Use these templates to get gigs. Just copy, paste, and edit the [Bracketed Info].**
-
-### Option A: Pitching to a Cafe/Restaurant (The "Soul" Side)
-**Subject:** Live Music Inquiry: Acoustic Set by Emmanuel Samson Egbert
-
-**Body:**
-Hi [Manager Name],
-
-I hope you're having a great week.
-
-I’m Emmanuel, a local musician here in Prayagraj. I’ve visited [Venue Name] recently and love the atmosphere you’ve built.
-
-I specialize in melodic acoustic sets (John Mayer, Bryan Adams, soft Rock) that enhance the dining experience without overpowering conversation. I think my style would be a perfect fit for your [Friday Night/Sunday Brunch] crowd.
-
-You can hear my acoustic style here: [Link to your John Mayer cover]
-
-Are you currently booking for next month? I’d love to stop by and play a 15-minute demo so you can hear the vibe in person.
-
-Best,
-Emmanuel Samson Egbert
-+91 8601695720
-
-### Option B: Pitching to a College Fest/Rock Event (The "Shred" Side)
-**Subject:** Booking Inquiry: High-Energy Guitarist for [Event Name]
-
-**Body:**
-Hi [Organizer Name],
-
-I’m writing to inquire about the lineup for [Event Name].
-
-I am a Metal/Rock guitarist based in Prayagraj specializing in high-energy performances. My set includes crowd-favorite covers from bands like Slipknot and Linkin Park, designed to get the crowd moving.
-
-If you are looking for an act that brings technical skill and high energy to the stage, I’d love to be considered.
-
-**Showreel:** [Link to your YouTube Channel]
-
-Let me know if you have a slot open!
-
-Cheers,
-Emmanuel Samson Egbert
-"""
-
-# 3. CONTENT FOR SOCIAL STRATEGY (Markdown)
-strategy_content = r"""# Social Media Strategy: The "Shred & Soul" Method
-
-**The Goal:** To confuse and delight the algorithm by showing you are TWO guitarists in one.
-**The Schedule:** Post 3 times a week (e.g., Mon, Wed, Fri).
-**The Hashtags:** #PrayagrajMusic #IndianGuitarist #MetalheadIndia #SlipknotCover #JohnMayer #GuitaristOfInstagram #DesiMetal #ShredGuitar
-
----
-
-## 1. Viral Reel Scripts
-
-### Script 1: " The Switch" (High Engagement)
-*Concept: Show the drastic difference between your two styles in 10 seconds.*
-
-**Visual:**
-* **0:00-0:03:** You are wearing a black t-shirt, aggressive posture. Text on screen: *"What people think I play..."*
-    * *Audio:* Slipknot - Psychosocial (Main Riff) - Super heavy, distorted.
-* **0:03-0:04:** Quick Transition (Snap fingers or cover camera with hand).
-* **0:04-0:10:** You are wearing a nice button-down shirt or bright lighting. Text on screen: *"...What I actually do at 2 AM."*
-    * *Audio:* John Mayer - Last Train Home (Acoustic, pretty fingerstyle).
-
-**Caption:** Get you a guitarist who can do both. 💀➡️🌹 #MetalVsAcoustic #GuitarPlayer #Versatility #Slipknot #JohnMayer
-
----
-
-### Script 2: "The Riff Challenge" (Authority Building)
-*Concept: Prove your skill level.*
-
-**Visual:**
-* **0:00-0:05:** Close up on your fretboard (left hand). Play a very fast, technical metal run (scales/shredding).
-* **Text on screen:** *"POV: You tried to learn this riff for 3 hours."*
-* **0:05-0:08:** You look at the camera and shrug/smile.
-* **Text on screen:** *"Worth it."*
-
-**Caption:** The fingers hurt but the tone is worth it. Guess the song in the comments! 👇 #GuitarSolo #Shredder #MetalGuitar #PrayagrajArtist
-
----
-
-### Script 3: "The Local Hero" (Local Reach)
-*Concept: Connect with the Prayagraj audience.*
-
-**Visual:**
-* **Shot:** You playing acoustic guitar with a recognizable Prayagraj landmark in the background (or just a nice outdoor spot in Civil Lines/Sangam area).
-* **Audio:** A popular Bollywood song played in your specific "Acoustic/Country" style.
-* **Text:** *"Sunday jamming in Prayagraj ❤️"*
-
-**Caption:** Nothing beats the vibe of this city. Turning this Bollywood classic into an acoustic ballad today. #Prayagraj #Allahabad #Sangam #DesiMusic #AcousticCovers
-
----
-
-## 2. Power Captions (Copy & Paste)
-
-**For Metal Posts:**
-"Drop D tuning and high gain is my therapy. 🤘 Covering [Song Name] today. Let me know if I did justice to the original! @slipknot @lambofgod"
-
-**For Acoustic Posts:**
-"Stripping it back today. No distortion, just wood and wire. Here’s my take on [Song Name]. Dedicated to the slow evenings. ☕✨"
-
-**For "About Me" Posts:**
-"From Prayagraj to the world. 🌏 My name is Emmanuel, and I speak in 6 strings. Whether it's heavy riffs or soft melodies, thanks for listening to my journey."
-"""
-
-# WRITE FILES AND CREATE ZIP
-zip_filename = "Emmanuel_Project_Bundle.zip"
-
-print(f"Creating {zip_filename}...")
-
-# Create the Zip File
-with zipfile.ZipFile(zip_filename, 'w') as zf:
-    zf.writestr("index.html", html_content)
-    zf.writestr("press_kit.md", epk_content)
-    zf.writestr("social_strategy.md", strategy_content)
-
-print("-------------------------------------------------------")
-print(f"SUCCESS! Created '{zip_filename}' in this folder.")
-print("You can now open the zip file to access your website and documents.")
-print("-------------------------------------------------------")
+</html>
